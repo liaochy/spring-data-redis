@@ -50,7 +50,7 @@ public interface SetOperations<K, V> {
 
 	Long unionAndStore(K key, Collection<K> otherKeys, K destKey);
 
-	Boolean add(K key, V value);
+	Boolean add(K key, V... value);
 
 	Boolean isMember(K key, Object o);
 
