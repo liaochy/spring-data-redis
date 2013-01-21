@@ -29,7 +29,6 @@ import org.junit.runners.Parameterized.Parameters;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.ConnectionFactoryTracker;
 import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.data.redis.connection.rjc.RjcConnectionFactory;
 import org.springframework.data.redis.support.collections.CollectionTestParams;
 import org.springframework.data.redis.support.collections.ObjectFactory;
 
@@ -64,12 +63,9 @@ public class TemplateTest {
 
 	@Test
 	public void testIncrement() throws Exception {
-		// disable in case of Rjc
-		if (isRjc()) {
-			return;
-		}
 
-		StringRedisTemplate sr = new StringRedisTemplate(template.getConnectionFactory());
+		StringRedisTemplate sr = new StringRedisTemplate(
+				template.getConnectionFactory());
 		String key = "test.template.inc";
 		ValueOperations<String, String> valueOps = sr.opsForValue();
 		valueOps.set(key, "10");
@@ -79,18 +75,17 @@ public class TemplateTest {
 		assertEquals(-10, Integer.valueOf(valueOps.get(key)).intValue());
 	}
 
-	private boolean isRjc() {
-		return (template.getConnectionFactory() instanceof RjcConnectionFactory);
-	}
-
-	//@Test
+	// @Test
 	public void testGetNonExistingKey() throws Exception {
-		List<Object> res = (List<Object>) template.execute(new RedisCallback<List<Object>>() {
+		List<Object> res = (List<Object>) template.execute(
+				new RedisCallback<List<Object>>() {
 
-			public List<Object> doInRedis(RedisConnection connection) throws DataAccessException {
-				connection.hGet("non-existing-key".getBytes(), "some-value".getBytes());
-				return connection.closePipeline();
-			}
-		}, true, true);
+					public List<Object> doInRedis(RedisConnection connection)
+							throws DataAccessException {
+						connection.hGet("non-existing-key".getBytes(),
+								"some-value".getBytes());
+						return connection.closePipeline();
+					}
+				}, true, true);
 	}
 }

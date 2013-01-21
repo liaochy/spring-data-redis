@@ -38,8 +38,6 @@ import org.junit.runners.Parameterized.Parameters;
 import org.springframework.data.redis.Person;
 import org.springframework.data.redis.SettingsUtils;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-import org.springframework.data.redis.connection.jredis.JredisConnectionFactory;
-import org.springframework.data.redis.connection.rjc.RjcConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
@@ -56,24 +54,23 @@ public class RedisPropertiesTests extends RedisMapTests {
 
 	/**
 	 * Constructs a new <code>RedisPropertiesTests</code> instance.
-	 *
+	 * 
 	 * @param keyFactory
 	 * @param valueFactory
 	 * @param template
 	 */
-	public RedisPropertiesTests(ObjectFactory<Object> keyFactory, ObjectFactory<Object> valueFactory,
-			RedisTemplate template) {
+	public RedisPropertiesTests(ObjectFactory<Object> keyFactory,
+			ObjectFactory<Object> valueFactory, RedisTemplate template) {
 		super(keyFactory, valueFactory, template);
 	}
 
-	
 	RedisMap<Object, Object> createMap() {
 		String redisName = getClass().getSimpleName();
-		props = new RedisProperties(defaults, redisName, new StringRedisTemplate(template.getConnectionFactory()));
+		props = new RedisProperties(defaults, redisName,
+				new StringRedisTemplate(template.getConnectionFactory()));
 		return props;
 	}
 
-	
 	protected RedisStore copyStore(RedisStore store) {
 		return new RedisProperties(store.getKey(), store.getOperations());
 	}
@@ -85,8 +82,9 @@ public class RedisPropertiesTests extends RedisMapTests {
 
 	@Test
 	public void testPropertiesLoad() throws Exception {
-		InputStream stream = getClass().getResourceAsStream(
-				"/org/springframework/data/redis/support/collections/props.properties");
+		InputStream stream = getClass()
+				.getResourceAsStream(
+						"/org/springframework/data/redis/support/collections/props.properties");
 
 		assertNotNull(stream);
 
@@ -107,8 +105,9 @@ public class RedisPropertiesTests extends RedisMapTests {
 	@Test
 	@Ignore
 	public void testPropertiesLoadXml() throws Exception {
-		InputStream stream = getClass().getResourceAsStream(
-				"/org/springframework/data/keyvalue/redis/support/collections/props.properties");
+		InputStream stream = getClass()
+				.getResourceAsStream(
+						"/org/springframework/data/keyvalue/redis/support/collections/props.properties");
 
 		assertNotNull(stream);
 
@@ -133,7 +132,7 @@ public class RedisPropertiesTests extends RedisMapTests {
 
 		StringWriter writer = new StringWriter();
 		props.store(writer, "no-comment");
-		//System.out.println(writer.toString());
+		// System.out.println(writer.toString());
 	}
 
 	@Test
@@ -229,8 +228,10 @@ public class RedisPropertiesTests extends RedisMapTests {
 			throw new RuntimeException("Cannot init XStream", ex);
 		}
 		OxmSerializer serializer = new OxmSerializer(xstream, xstream);
-		JacksonJsonRedisSerializer<Person> jsonSerializer = new JacksonJsonRedisSerializer<Person>(Person.class);
-		JacksonJsonRedisSerializer<String> jsonStringSerializer = new JacksonJsonRedisSerializer<String>(String.class);
+		JacksonJsonRedisSerializer<Person> jsonSerializer = new JacksonJsonRedisSerializer<Person>(
+				Person.class);
+		JacksonJsonRedisSerializer<String> jsonStringSerializer = new JacksonJsonRedisSerializer<String>(
+				String.class);
 
 		// create Jedis Factory
 		ObjectFactory<String> stringFactory = new StringObjectFactory();
@@ -243,7 +244,8 @@ public class RedisPropertiesTests extends RedisMapTests {
 
 		jedisConnFactory.afterPropertiesSet();
 
-		RedisTemplate<String, String> genericTemplate = new StringRedisTemplate(jedisConnFactory);
+		RedisTemplate<String, String> genericTemplate = new StringRedisTemplate(
+				jedisConnFactory);
 
 		RedisTemplate<String, String> xstreamGenericTemplate = new RedisTemplate<String, String>();
 		xstreamGenericTemplate.setConnectionFactory(jedisConnFactory);
@@ -257,65 +259,13 @@ public class RedisPropertiesTests extends RedisMapTests {
 		jsonPersonTemplate.setHashValueSerializer(jsonStringSerializer);
 		jsonPersonTemplate.afterPropertiesSet();
 
-		// JRedis
-		JredisConnectionFactory jredisConnFactory = new JredisConnectionFactory();
-		jredisConnFactory.setUsePool(true);
-		jredisConnFactory.setPort(SettingsUtils.getPort());
-		jredisConnFactory.setHostName(SettingsUtils.getHost());
-		jredisConnFactory.afterPropertiesSet();
-
-		RedisTemplate<String, String> genericTemplateJR = new StringRedisTemplate(jredisConnFactory);
-		RedisTemplate<String, Person> xGenericTemplateJR = new RedisTemplate<String, Person>();
-		xGenericTemplateJR.setConnectionFactory(jredisConnFactory);
-		xGenericTemplateJR.setDefaultSerializer(serializer);
-		xGenericTemplateJR.afterPropertiesSet();
-
-		RedisTemplate<String, Person> jsonPersonTemplateJR = new RedisTemplate<String, Person>();
-		jsonPersonTemplateJR.setConnectionFactory(jredisConnFactory);
-		jsonPersonTemplateJR.setDefaultSerializer(jsonSerializer);
-		jsonPersonTemplateJR.setHashKeySerializer(jsonSerializer);
-		jsonPersonTemplateJR.setHashValueSerializer(jsonStringSerializer);
-		jsonPersonTemplateJR.afterPropertiesSet();
-
-		// RJC
-
-		// rjc
-		RjcConnectionFactory rjcConnFactory = new RjcConnectionFactory();
-		rjcConnFactory.setUsePool(true);
-		rjcConnFactory.setPort(SettingsUtils.getPort());
-		rjcConnFactory.setHostName(SettingsUtils.getHost());
-		rjcConnFactory.afterPropertiesSet();
-
-		RedisTemplate<String, String> genericTemplateRJC = new StringRedisTemplate(jredisConnFactory);
-		RedisTemplate<String, Person> xGenericTemplateRJC = new RedisTemplate<String, Person>();
-		xGenericTemplateRJC.setConnectionFactory(rjcConnFactory);
-		xGenericTemplateRJC.setDefaultSerializer(serializer);
-		xGenericTemplateRJC.afterPropertiesSet();
-
-		RedisTemplate<String, Person> jsonPersonTemplateRJC = new RedisTemplate<String, Person>();
-		jsonPersonTemplateRJC.setConnectionFactory(rjcConnFactory);
-		jsonPersonTemplateRJC.setDefaultSerializer(jsonSerializer);
-		jsonPersonTemplateRJC.setHashKeySerializer(jsonSerializer);
-		jsonPersonTemplateRJC.setHashValueSerializer(jsonStringSerializer);
-		jsonPersonTemplateRJC.afterPropertiesSet();
-
-
-		return Arrays.asList(new Object[][] { { stringFactory, stringFactory, genericTemplate },
-				{ stringFactory, stringFactory, genericTemplate }, { stringFactory, stringFactory, genericTemplate },
+		return Arrays.asList(new Object[][] {
+				{ stringFactory, stringFactory, genericTemplate },
+				{ stringFactory, stringFactory, genericTemplate },
+				{ stringFactory, stringFactory, genericTemplate },
 				{ stringFactory, stringFactory, genericTemplate },
 				{ stringFactory, stringFactory, xstreamGenericTemplate },
-				{ stringFactory, stringFactory, genericTemplateJR },
-				{ stringFactory, stringFactory, genericTemplateJR },
-				{ stringFactory, stringFactory, genericTemplateJR },
-				{ stringFactory, stringFactory, genericTemplateJR },
-				{ stringFactory, stringFactory, xGenericTemplateJR },
-				{ stringFactory, stringFactory, jsonPersonTemplate },
-				{ stringFactory, stringFactory, jsonPersonTemplateJR },
-				{ stringFactory, stringFactory, genericTemplateRJC },
-				{ stringFactory, stringFactory, genericTemplateRJC },
-				{ stringFactory, stringFactory, genericTemplateRJC },
-				{ stringFactory, stringFactory, genericTemplateRJC },
-				{ stringFactory, stringFactory, xGenericTemplateRJC },
-				{ stringFactory, stringFactory, jsonPersonTemplateRJC } });
+
+				{ stringFactory, stringFactory, jsonPersonTemplate }, });
 	}
 }

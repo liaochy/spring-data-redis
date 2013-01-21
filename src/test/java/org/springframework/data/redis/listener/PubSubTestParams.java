@@ -21,7 +21,6 @@ import java.util.Collection;
 import org.springframework.data.redis.Person;
 import org.springframework.data.redis.SettingsUtils;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-import org.springframework.data.redis.connection.rjc.RjcConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.support.collections.ObjectFactory;
@@ -46,27 +45,16 @@ public class PubSubTestParams {
 
 		jedisConnFactory.afterPropertiesSet();
 
-		RedisTemplate<String, String> stringTemplate = new StringRedisTemplate(jedisConnFactory);
+		RedisTemplate<String, String> stringTemplate = new StringRedisTemplate(
+				jedisConnFactory);
 		RedisTemplate<String, Person> personTemplate = new RedisTemplate<String, Person>();
 		personTemplate.setConnectionFactory(jedisConnFactory);
 		personTemplate.afterPropertiesSet();
 
-		// create RJC
+		return Arrays.asList(new Object[][] {
+				{ stringFactory, stringTemplate },
+				{ personFactory, personTemplate }
 
-		RjcConnectionFactory rjcConnFactory = new RjcConnectionFactory();
-		rjcConnFactory.setUsePool(false);
-		rjcConnFactory.setPort(SettingsUtils.getPort());
-		rjcConnFactory.setHostName(SettingsUtils.getHost());
-		rjcConnFactory.afterPropertiesSet();
-
-		RedisTemplate<String, String> stringTemplateRJC = new StringRedisTemplate(rjcConnFactory);
-		RedisTemplate<String, Person> personTemplateRJC = new RedisTemplate<String, Person>();
-		personTemplateRJC.setConnectionFactory(rjcConnFactory);
-		personTemplateRJC.afterPropertiesSet();
-
-
-		return Arrays.asList(new Object[][] { { stringFactory, stringTemplate }, { personFactory, personTemplate },
-				{ stringFactory, stringTemplateRJC }, { personFactory, personTemplateRJC }
 		});
 	}
 }
