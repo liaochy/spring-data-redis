@@ -1,5 +1,6 @@
 buildscript {
     repositories {
+        maven { url 'http://mvn.d.sohu.com/nexus/content/groups/public/' }
         maven { url 'http://repo.springsource.org/plugins-release' }
     }
     dependencies {
@@ -12,9 +13,12 @@ description = 'Spring Data Redis'
 group = 'org.springframework.data'
 
 repositories {
+  maven { url "http://mvn.d.sohu.com/nexus/content/repositories/snapshots/" }
+  maven { url "http://mvn.d.sohu.com/nexus/content/repositories/releases/" }
   maven { url "http://repo.springsource.org/libs-snapshot" }
   maven { url "http://repo.springsource.org/plugins-release" }
 }
+
 
 apply plugin: "java"
 apply plugin: 'eclipse'
@@ -43,9 +47,6 @@ dependencies {
 
     // Redis Drivers
     compile "redis.clients:jedis:$jedisVersion"
-    compile("com.github.spullara.redis:client:$srpVersion", optional)
-    compile("org.jredis:jredis-anthonylauzon:$jredisVersion", optional)
-    compile("org.idevlab:rjc:$rjcVersion", optional)
     
     // Mappers
     compile("org.codehaus.jackson:jackson-mapper-asl:$jacksonVersion", optional)
