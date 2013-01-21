@@ -15,7 +15,6 @@
  */
 package org.springframework.data.redis.connection;
 
-
 /**
  * Default message implementation.
  * 
@@ -23,6 +22,7 @@ package org.springframework.data.redis.connection;
  */
 public class DefaultMessage implements Message {
 
+	private static final long serialVersionUID = 1L;
 	private final byte[] channel;
 	private final byte[] body;
 	private String toString;
@@ -32,19 +32,16 @@ public class DefaultMessage implements Message {
 		this.channel = channel;
 	}
 
-	
 	public byte[] getChannel() {
 		return (channel != null ? channel.clone() : null);
 	}
 
-	
 	public byte[] getBody() {
 		return (body != null ? body.clone() : null);
 	}
 
-	
 	public String toString() {
-		if (toString == null){
+		if (toString == null) {
 			toString = new String(body);
 		}
 		return toString;

@@ -40,30 +40,40 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 /**
- * Helper class that simplifies Redis data access code. 
+ * Helper class that simplifies Redis data access code.
  * <p/>
- * Performs automatic serialization/deserialization between the given objects and the underlying binary data in the Redis store.
- * By default, it uses Java serialization for its objects (through {@link JdkSerializationRedisSerializer}). For String intensive
- * operations consider the dedicated {@link StringRedisTemplate}.
+ * Performs automatic serialization/deserialization between the given objects
+ * and the underlying binary data in the Redis store. By default, it uses Java
+ * serialization for its objects (through
+ * {@link JdkSerializationRedisSerializer}). For String intensive operations
+ * consider the dedicated {@link StringRedisTemplate}.
  * <p/>
- * The central method is execute, supporting Redis access code implementing the {@link RedisCallback} interface.
- * It provides {@link RedisConnection} handling such that neither the {@link RedisCallback} implementation nor 
- * the calling code needs to explicitly care about retrieving/closing Redis connections, or handling Connection 
- * lifecycle exceptions. For typical single step actions, there are various convenience methods.
+ * The central method is execute, supporting Redis access code implementing the
+ * {@link RedisCallback} interface. It provides {@link RedisConnection} handling
+ * such that neither the {@link RedisCallback} implementation nor the calling
+ * code needs to explicitly care about retrieving/closing Redis connections, or
+ * handling Connection lifecycle exceptions. For typical single step actions,
+ * there are various convenience methods.
  * <p/>
  * Once configured, this class is thread-safe.
  * 
- * <p/>Note that while the template is generified, it is up to the serializers/deserializers to properly convert the given Objects
- * to and from binary data. 
+ * <p/>
+ * Note that while the template is generified, it is up to the
+ * serializers/deserializers to properly convert the given Objects to and from
+ * binary data.
  * <p/>
  * <b>This is the central class in Redis support</b>.
  * 
  * @author Costin Leau
- * @param <K> the Redis key type against which the template works (usually a String)
- * @param <V> the Redis value type against which the template works
+ * @param <K>
+ *            the Redis key type against which the template works (usually a
+ *            String)
+ * @param <V>
+ *            the Redis value type against which the template works
  * @see StringRedisTemplate
  */
-public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperations<K, V> {
+public class RedisTemplate<K, V> extends RedisAccessor implements
+		RedisOperations<K, V> {
 
 	private boolean exposeConnection = false;
 	private RedisSerializer<?> defaultSerializer = new JdkSerializationRedisSerializer();
@@ -82,11 +92,10 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 
 	/**
 	 * Constructs a new <code>RedisTemplate</code> instance.
-	 *
+	 * 
 	 */
 	public RedisTemplate() {
 	}
-
 
 	public void afterPropertiesSet() {
 		super.afterPropertiesSet();
@@ -112,21 +121,26 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		}
 
 		if (defaultUsed) {
-			Assert.notNull(defaultSerializer, "default serializer null and not all serializers initialized");
+			Assert.notNull(defaultSerializer,
+					"default serializer null and not all serializers initialized");
 		}
 	}
-
 
 	public <T> T execute(RedisCallback<T> action) {
 		return execute(action, isExposeConnection());
 	}
 
 	/**
-	 * Executes the given action object within a connection, which can be exposed or not.
-	 *   
-	 * @param <T> return type
-	 * @param action callback object that specifies the Redis action
-	 * @param exposeConnection whether to enforce exposure of the native Redis Connection to callback code 
+	 * Executes the given action object within a connection, which can be
+	 * exposed or not.
+	 * 
+	 * @param <T>
+	 *            return type
+	 * @param action
+	 *            callback object that specifies the Redis action
+	 * @param exposeConnection
+	 *            whether to enforce exposure of the native Redis Connection to
+	 *            callback code
 	 * @return object returned by the action
 	 */
 	public <T> T execute(RedisCallback<T> action, boolean exposeConnection) {
@@ -134,16 +148,24 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 	}
 
 	/**
-	 * Executes the given action object within a connection that can be exposed or not. Additionally, the connection
-	 * can be pipelined. Note the results of the pipeline are discarded (making it suitable for write-only scenarios).
+	 * Executes the given action object within a connection that can be exposed
+	 * or not. Additionally, the connection can be pipelined. Note the results
+	 * of the pipeline are discarded (making it suitable for write-only
+	 * scenarios).
 	 * 
-	 * @param <T> return type
-	 * @param action callback object to execute
-	 * @param exposeConnection whether to enforce exposure of the native Redis Connection to callback code
-	 * @param pipeline whether to pipeline or not the connection for the execution 
+	 * @param <T>
+	 *            return type
+	 * @param action
+	 *            callback object to execute
+	 * @param exposeConnection
+	 *            whether to enforce exposure of the native Redis Connection to
+	 *            callback code
+	 * @param pipeline
+	 *            whether to pipeline or not the connection for the execution
 	 * @return object returned by the action
 	 */
-	public <T> T execute(RedisCallback<T> action, boolean exposeConnection, boolean pipeline) {
+	public <T> T execute(RedisCallback<T> action, boolean exposeConnection,
+			boolean pipeline) {
 		Assert.notNull(action, "Callback object must not be null");
 
 		RedisConnectionFactory factory = getConnectionFactory();
@@ -151,7 +173,8 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		try {
 			conn = RedisConnectionUtils.getConnection(factory);
 
-			boolean existingConnection = TransactionSynchronizationManager.hasResource(factory);
+			boolean existingConnection = TransactionSynchronizationManager
+					.hasResource(factory);
 			preProcessConnection(conn, existingConnection);
 
 			boolean pipelineStatus = conn.isPipelined();
@@ -159,7 +182,8 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 				conn.openPipeline();
 			}
 
-			RedisConnection connToExpose = (exposeConnection ? conn : createRedisConnectionProxy(conn));
+			RedisConnection connToExpose = (exposeConnection ? conn
+					: createRedisConnectionProxy(conn));
 			T result = action.doInRedis(connToExpose);
 
 			// close pipeline
@@ -174,8 +198,6 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		}
 	}
 
-
-
 	public <T> T execute(SessionCallback<T> session) {
 		RedisConnectionFactory factory = getConnectionFactory();
 		// bind connection
@@ -187,65 +209,76 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		}
 	}
 
-	//	@SuppressWarnings("unchecked")
-	//	public List<V> executePipelined(final RedisCallback<?> action) {
-	//		return executePipelined(action, valueSerializer);
-	//	}
+	// @SuppressWarnings("unchecked")
+	// public List<V> executePipelined(final RedisCallback<?> action) {
+	// return executePipelined(action, valueSerializer);
+	// }
 	//
-	//	/**
-	//	 * Executes the given action object on a pipelined connection, returning the results using a dedicated serializer.
-	//	 * Note that the callback <b>cannot</b> return a non-null value as it gets overwritten by the pipeline.
-	//	 * 
-	//	 * @param action callback object to execute
-	//	 * @param resultSerializer
-	//	 * @return list of objects returned by the pipeline
-	//	 */
-	//	public <T> List<T> executePipelined(final RedisCallback<?> action, final RedisSerializer<T> resultSerializer) {
-	//		return execute(new RedisCallback<List<T>>() {
-	//			public List<T> doInRedis(RedisConnection connection) throws DataAccessException {
-	//				connection.openPipeline();
-	//				boolean pipelinedClosed = false;
-	//				try {
-	//					Object result = action.doInRedis(connection);
-	//					if (result != null) {
-	//						throw new InvalidDataAccessApiUsageException(
-	//								"Callback cannot returned a non-null value as it gets overwritten by the pipeline");
-	//					}
-	//					List<Object> closePipeline = connection.closePipeline();
-	//					pipelinedClosed = true;
-	//					//return SerializationUtils.deserialize(pipeline, resultSerializer);
+	// /**
+	// * Executes the given action object on a pipelined connection, returning
+	// the results using a dedicated serializer.
+	// * Note that the callback <b>cannot</b> return a non-null value as it gets
+	// overwritten by the pipeline.
+	// *
+	// * @param action callback object to execute
+	// * @param resultSerializer
+	// * @return list of objects returned by the pipeline
+	// */
+	// public <T> List<T> executePipelined(final RedisCallback<?> action, final
+	// RedisSerializer<T> resultSerializer) {
+	// return execute(new RedisCallback<List<T>>() {
+	// public List<T> doInRedis(RedisConnection connection) throws
+	// DataAccessException {
+	// connection.openPipeline();
+	// boolean pipelinedClosed = false;
+	// try {
+	// Object result = action.doInRedis(connection);
+	// if (result != null) {
+	// throw new InvalidDataAccessApiUsageException(
+	// "Callback cannot returned a non-null value as it gets overwritten by the pipeline");
+	// }
+	// List<Object> closePipeline = connection.closePipeline();
+	// pipelinedClosed = true;
+	// //return SerializationUtils.deserialize(pipeline, resultSerializer);
 	//
-	//				} finally {
-	//					if (!pipelinedClosed) {
-	//						connection.closePipeline();
-	//					}
-	//				}
-	//			}
-	//		});
-	//	}
+	// } finally {
+	// if (!pipelinedClosed) {
+	// connection.closePipeline();
+	// }
+	// }
+	// }
+	// });
+	// }
 
 	protected RedisConnection createRedisConnectionProxy(RedisConnection pm) {
-		Class<?>[] ifcs = ClassUtils.getAllInterfacesForClass(pm.getClass(), getClass().getClassLoader());
-		return (RedisConnection) Proxy.newProxyInstance(pm.getClass().getClassLoader(), ifcs,
-				new CloseSuppressingInvocationHandler(pm));
+		Class<?>[] ifcs = ClassUtils.getAllInterfacesForClass(pm.getClass(),
+				getClass().getClassLoader());
+		return (RedisConnection) Proxy.newProxyInstance(pm.getClass()
+				.getClassLoader(), ifcs, new CloseSuppressingInvocationHandler(
+				pm));
 	}
 
 	/**
-	 * Processes the connection (before any settings are executed on it). Default implementation returns the connection as is.
+	 * Processes the connection (before any settings are executed on it).
+	 * Default implementation returns the connection as is.
 	 * 
-	 * @param connection redis connection
+	 * @param connection
+	 *            redis connection
 	 */
-	protected RedisConnection preProcessConnection(RedisConnection connection, boolean existingConnection) {
+	protected RedisConnection preProcessConnection(RedisConnection connection,
+			boolean existingConnection) {
 		return connection;
 	}
 
-	protected <T> T postProcessResult(T result, RedisConnection conn, boolean existingConnection) {
+	protected <T> T postProcessResult(T result, RedisConnection conn,
+			boolean existingConnection) {
 		return result;
 	}
 
 	/**
-	 * Returns whether to expose the native Redis connection to RedisCallback code, or rather a connection proxy (the default). 
-	 *
+	 * Returns whether to expose the native Redis connection to RedisCallback
+	 * code, or rather a connection proxy (the default).
+	 * 
 	 * @return whether to expose the native Redis connection or not
 	 */
 	public boolean isExposeConnection() {
@@ -253,10 +286,12 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 	}
 
 	/**
-	 * Sets whether to expose the Redis connection to {@link RedisCallback} code.
+	 * Sets whether to expose the Redis connection to {@link RedisCallback}
+	 * code.
 	 * 
-	 * Default is "false": a proxy will be returned, suppressing <tt>quit</tt> and <tt>disconnect</tt> calls.
-	 *  
+	 * Default is "false": a proxy will be returned, suppressing <tt>quit</tt>
+	 * and <tt>disconnect</tt> calls.
+	 * 
 	 * @param exposeConnection
 	 */
 	public void setExposeConnection(boolean exposeConnection) {
@@ -273,19 +308,24 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 	}
 
 	/**
-	 * Sets the default serializer to use for this template. All serializers (expect the {@link #setStringSerializer(RedisSerializer)}) are
-	 * initialized to this value unless explicitly set. Defaults to {@link JdkSerializationRedisSerializer}.
+	 * Sets the default serializer to use for this template. All serializers
+	 * (expect the {@link #setStringSerializer(RedisSerializer)}) are
+	 * initialized to this value unless explicitly set. Defaults to
+	 * {@link JdkSerializationRedisSerializer}.
 	 * 
-	 * @param serializer default serializer to use
+	 * @param serializer
+	 *            default serializer to use
 	 */
 	public void setDefaultSerializer(RedisSerializer<?> serializer) {
 		this.defaultSerializer = serializer;
 	}
 
 	/**
-	 * Sets the key serializer to be used by this template. Defaults to {@link #getDefaultSerializer()}.
+	 * Sets the key serializer to be used by this template. Defaults to
+	 * {@link #getDefaultSerializer()}.
 	 * 
-	 * @param serializer the key serializer to be used by this template.
+	 * @param serializer
+	 *            the key serializer to be used by this template.
 	 */
 	public void setKeySerializer(RedisSerializer<?> serializer) {
 		this.keySerializer = serializer;
@@ -301,9 +341,11 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 	}
 
 	/**
-	 * Sets the value serializer to be used by this template. Defaults to {@link #getDefaultSerializer()}.
+	 * Sets the value serializer to be used by this template. Defaults to
+	 * {@link #getDefaultSerializer()}.
 	 * 
-	 * @param serializer the value serializer to be used by this template.
+	 * @param serializer
+	 *            the value serializer to be used by this template.
 	 */
 	public void setValueSerializer(RedisSerializer<?> serializer) {
 		this.valueSerializer = serializer;
@@ -320,7 +362,7 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 
 	/**
 	 * Returns the hashKeySerializer.
-	 *
+	 * 
 	 * @return Returns the hashKeySerializer
 	 */
 	public RedisSerializer<?> getHashKeySerializer() {
@@ -328,9 +370,11 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 	}
 
 	/**
-	 * Sets the hash key (or field) serializer to be used by this template. Defaults to {@link #getDefaultSerializer()}. 
+	 * Sets the hash key (or field) serializer to be used by this template.
+	 * Defaults to {@link #getDefaultSerializer()}.
 	 * 
-	 * @param hashKeySerializer The hashKeySerializer to set.
+	 * @param hashKeySerializer
+	 *            The hashKeySerializer to set.
 	 */
 	public void setHashKeySerializer(RedisSerializer<?> hashKeySerializer) {
 		this.hashKeySerializer = hashKeySerializer;
@@ -338,7 +382,7 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 
 	/**
 	 * Returns the hashValueSerializer.
-	 *
+	 * 
 	 * @return Returns the hashValueSerializer
 	 */
 	public RedisSerializer<?> getHashValueSerializer() {
@@ -346,9 +390,11 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 	}
 
 	/**
-	 * Sets the hash value serializer to be used by this template. Defaults to {@link #getDefaultSerializer()}. 
+	 * Sets the hash value serializer to be used by this template. Defaults to
+	 * {@link #getDefaultSerializer()}.
 	 * 
-	 * @param hashValueSerializer The hashValueSerializer to set.
+	 * @param hashValueSerializer
+	 *            The hashValueSerializer to set.
 	 */
 	public void setHashValueSerializer(RedisSerializer<?> hashValueSerializer) {
 		this.hashValueSerializer = hashValueSerializer;
@@ -356,7 +402,7 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 
 	/**
 	 * Returns the stringSerializer.
-	 *
+	 * 
 	 * @return Returns the stringSerializer
 	 */
 	public RedisSerializer<String> getStringSerializer() {
@@ -364,11 +410,13 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 	}
 
 	/**
-	 * Sets the string value serializer to be used by this template (when the arguments or return types
-	 * are always strings). Defaults to {@link StringRedisSerializer}.
+	 * Sets the string value serializer to be used by this template (when the
+	 * arguments or return types are always strings). Defaults to
+	 * {@link StringRedisSerializer}.
 	 * 
 	 * @see ValueOperations#get(Object, long, long)
-	 * @param stringSerializer The stringValueSerializer to set.
+	 * @param stringSerializer
+	 *            The stringValueSerializer to set.
 	 */
 	public void setStringSerializer(RedisSerializer<String> stringSerializer) {
 		this.stringSerializer = stringSerializer;
@@ -412,13 +460,12 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 	public List<Object> exec() {
 		return execute(new RedisCallback<List<Object>>() {
 
-
-			public List<Object> doInRedis(RedisConnection connection) throws DataAccessException {
+			public List<Object> doInRedis(RedisConnection connection)
+					throws DataAccessException {
 				return connection.exec();
 			}
 		});
 	}
-
 
 	public void delete(K key) {
 		final byte[] rawKey = rawKey(key);
@@ -432,7 +479,6 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		}, true);
 	}
 
-
 	public void delete(Collection<K> keys) {
 		final byte[][] rawKeys = rawKeys(keys);
 
@@ -445,7 +491,6 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		}, true);
 	}
 
-
 	public Boolean hasKey(K key) {
 		final byte[] rawKey = rawKey(key);
 
@@ -456,7 +501,6 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 			}
 		}, true);
 	}
-
 
 	public Boolean expire(K key, long timeout, TimeUnit unit) {
 		final byte[] rawKey = rawKey(key);
@@ -470,7 +514,6 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		}, true);
 	}
 
-
 	public Boolean expireAt(K key, Date date) {
 		final byte[] rawKey = rawKey(key);
 		final long rawTimeout = date.getTime() / 1000;
@@ -482,7 +525,6 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 			}
 		}, true);
 	}
-
 
 	public void convertAndSend(String channel, Object message) {
 		Assert.hasText(channel, "a non-empty channel is required");
@@ -499,11 +541,9 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		}, true);
 	}
 
-
 	//
 	// Value operations
 	//
-
 
 	public Long getExpire(K key) {
 		final byte[] rawKey = rawKey(key);
@@ -530,7 +570,6 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		return SerializationUtils.deserialize(rawKeys, keySerializer);
 	}
 
-
 	public Boolean persist(K key) {
 		final byte[] rawKey = rawKey(key);
 
@@ -541,7 +580,6 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 			}
 		}, true);
 	}
-
 
 	public Boolean move(K key, final int dbIndex) {
 		final byte[] rawKey = rawKey(key);
@@ -554,7 +592,6 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		}, true);
 	}
 
-
 	public K randomKey() {
 		byte[] rawKey = execute(new RedisCallback<byte[]>() {
 
@@ -565,7 +602,6 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 
 		return deserializeKey(rawKey);
 	}
-
 
 	public void rename(K oldKey, K newKey) {
 		final byte[] rawOldKey = rawKey(oldKey);
@@ -580,7 +616,6 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		}, true);
 	}
 
-
 	public Boolean renameIfAbsent(K oldKey, K newKey) {
 		final byte[] rawOldKey = rawKey(oldKey);
 		final byte[] rawNewKey = rawKey(newKey);
@@ -593,7 +628,6 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		}, true);
 	}
 
-
 	public DataType type(K key) {
 		final byte[] rawKey = rawKey(key);
 
@@ -605,29 +639,27 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		}, true);
 	}
 
-
 	public void multi() {
 		execute(new RedisCallback<Object>() {
 
-			public Object doInRedis(RedisConnection connection) throws DataAccessException {
+			public Object doInRedis(RedisConnection connection)
+					throws DataAccessException {
 				connection.multi();
 				return null;
 			}
 		}, true);
 	}
 
-
 	public void discard() {
 		execute(new RedisCallback<Object>() {
 
-
-			public Object doInRedis(RedisConnection connection) throws DataAccessException {
+			public Object doInRedis(RedisConnection connection)
+					throws DataAccessException {
 				connection.discard();
 				return null;
 			}
 		}, true);
 	}
-
 
 	public void watch(K key) {
 		final byte[] rawKey = rawKey(key);
@@ -641,7 +673,6 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		}, true);
 	}
 
-
 	public void watch(Collection<K> keys) {
 		final byte[][] rawKeys = rawKeys(keys);
 
@@ -654,11 +685,11 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		}, true);
 	}
 
-
 	public void unwatch() {
 		execute(new RedisCallback<Object>() {
 
-			public Object doInRedis(RedisConnection connection) throws DataAccessException {
+			public Object doInRedis(RedisConnection connection)
+					throws DataAccessException {
 				connection.unwatch();
 				return null;
 			}
@@ -672,14 +703,16 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		return sort(query, valueSerializer);
 	}
 
-
-	public <T> List<T> sort(SortQuery<K> query, RedisSerializer<T> resultSerializer) {
+	public <T> List<T> sort(SortQuery<K> query,
+			RedisSerializer<T> resultSerializer) {
 		final byte[] rawKey = rawKey(query.getKey());
-		final SortParameters params = QueryUtils.convertQuery(query, stringSerializer);
+		final SortParameters params = QueryUtils.convertQuery(query,
+				stringSerializer);
 
 		List<byte[]> vals = execute(new RedisCallback<List<byte[]>>() {
 
-			public List<byte[]> doInRedis(RedisConnection connection) throws DataAccessException {
+			public List<byte[]> doInRedis(RedisConnection connection)
+					throws DataAccessException {
 				return connection.sort(rawKey, params);
 			}
 		}, true);
@@ -692,8 +725,8 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		return sort(query, bulkMapper, valueSerializer);
 	}
 
-
-	public <T, S> List<T> sort(SortQuery<K> query, BulkMapper<T, S> bulkMapper, RedisSerializer<S> resultSerializer) {
+	public <T, S> List<T> sort(SortQuery<K> query, BulkMapper<T, S> bulkMapper,
+			RedisSerializer<S> resultSerializer) {
 		List<S> values = sort(query, resultSerializer);
 
 		if (values == null || values.isEmpty()) {
@@ -708,8 +741,10 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 
 			bulk.add(s);
 			if (bulk.size() == bulkSize) {
-				result.add(bulkMapper.mapBulk(Collections.unmodifiableList(bulk)));
-				// create a new list (we could reuse the old one but the client might hang on to it for some reason)
+				result.add(bulkMapper.mapBulk(Collections
+						.unmodifiableList(bulk)));
+				// create a new list (we could reuse the old one but the client
+				// might hang on to it for some reason)
 				bulk = new ArrayList<S>(bulkSize);
 			}
 		}
@@ -717,25 +752,24 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		return result;
 	}
 
-
 	public Long sort(SortQuery<K> query, K storeKey) {
 		final byte[] rawStoreKey = rawKey(storeKey);
 		final byte[] rawKey = rawKey(query.getKey());
-		final SortParameters params = QueryUtils.convertQuery(query, stringSerializer);
+		final SortParameters params = QueryUtils.convertQuery(query,
+				stringSerializer);
 
 		return execute(new RedisCallback<Long>() {
 
-			public Long doInRedis(RedisConnection connection) throws DataAccessException {
+			public Long doInRedis(RedisConnection connection)
+					throws DataAccessException {
 				return connection.sort(rawKey, params, rawStoreKey);
 			}
 		}, true);
 	}
 
-
 	public BoundValueOperations<K, V> boundValueOps(K key) {
 		return new DefaultBoundValueOperations<K, V>(key, this);
 	}
-
 
 	public ValueOperations<K, V> opsForValue() {
 		if (valueOps == null) {
@@ -744,7 +778,6 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		return valueOps;
 	}
 
-
 	public ListOperations<K, V> opsForList() {
 		if (listOps == null) {
 			listOps = new DefaultListOperations<K, V>(this);
@@ -752,16 +785,13 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		return listOps;
 	}
 
-
 	public BoundListOperations<K, V> boundListOps(K key) {
 		return new DefaultBoundListOperations<K, V>(key, this);
 	}
 
-
 	public BoundSetOperations<K, V> boundSetOps(K key) {
 		return new DefaultBoundSetOperations<K, V>(key, this);
 	}
-
 
 	public SetOperations<K, V> opsForSet() {
 		if (setOps == null) {
@@ -770,11 +800,9 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		return setOps;
 	}
 
-
 	public BoundZSetOperations<K, V> boundZSetOps(K key) {
 		return new DefaultBoundZSetOperations<K, V>(key, this);
 	}
-
 
 	public ZSetOperations<K, V> opsForZSet() {
 		if (zSetOps == null) {
@@ -783,11 +811,9 @@ public class RedisTemplate<K, V> extends RedisAccessor implements RedisOperation
 		return zSetOps;
 	}
 
-
 	public <HK, HV> BoundHashOperations<K, HK, HV> boundHashOps(K key) {
 		return new DefaultBoundHashOperations<K, HK, HV>(key, this);
 	}
-
 
 	public <HK, HV> HashOperations<K, HK, HV> opsForHash() {
 		return new DefaultHashOperations<K, HK, HV>(this);

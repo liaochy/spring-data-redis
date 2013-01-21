@@ -25,7 +25,7 @@ import java.util.Set;
  */
 public interface RedisSetCommands {
 
-	Boolean sAdd(byte[] key, byte[] value);
+	Boolean sAdd(byte[] key, byte[]... value);
 
 	Boolean sRem(byte[] key, byte[] value);
 

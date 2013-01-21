@@ -27,6 +27,11 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 public class RedisSubscribedConnectionException extends InvalidDataAccessApiUsageException {
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
 	 * Constructs a new <code>RedisSubscribedConnectionException</code> instance.
 	 *
 	 * @param msg

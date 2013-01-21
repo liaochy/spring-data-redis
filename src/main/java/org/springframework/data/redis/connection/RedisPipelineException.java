@@ -32,6 +32,10 @@ import org.springframework.dao.InvalidDataAccessResourceUsageException;
  */
 public class RedisPipelineException extends InvalidDataAccessResourceUsageException {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private final List<Object> results;
 
 	/**

@@ -40,10 +40,11 @@ public class DefaultStringRedisConnection implements StringRedisConnection {
 	private final RedisSerializer<String> serializer;
 
 	/**
-	 * Constructs a new <code>DefaultStringRedisConnection</code> instance.
-	 * Uses {@link StringRedisSerializer} as underlying serializer.
-	 *
-	 * @param connection Redis connection
+	 * Constructs a new <code>DefaultStringRedisConnection</code> instance. Uses
+	 * {@link StringRedisSerializer} as underlying serializer.
+	 * 
+	 * @param connection
+	 *            Redis connection
 	 */
 	public DefaultStringRedisConnection(RedisConnection connection) {
 		Assert.notNull(connection, "connection is required");
@@ -53,11 +54,14 @@ public class DefaultStringRedisConnection implements StringRedisConnection {
 
 	/**
 	 * Constructs a new <code>DefaultStringRedisConnection</code> instance.
-	 *
-	 * @param connection Redis connection
-	 * @param serializer String serializer
+	 * 
+	 * @param connection
+	 *            Redis connection
+	 * @param serializer
+	 *            String serializer
 	 */
-	public DefaultStringRedisConnection(RedisConnection connection, RedisSerializer<String> serializer) {
+	public DefaultStringRedisConnection(RedisConnection connection,
+			RedisSerializer<String> serializer) {
 		Assert.notNull(connection, "connection is required");
 		Assert.notNull(connection, "serializer is required");
 		this.delegate = connection;
@@ -356,7 +360,7 @@ public class DefaultStringRedisConnection implements StringRedisConnection {
 		return delegate.rPushX(key, value);
 	}
 
-	public Boolean sAdd(byte[] key, byte[] value) {
+	public Boolean sAdd(byte[] key, byte[]... value) {
 		return delegate.sAdd(key, value);
 	}
 
@@ -496,7 +500,8 @@ public class DefaultStringRedisConnection implements StringRedisConnection {
 		return delegate.zIncrBy(key, increment, value);
 	}
 
-	public Long zInterStore(byte[] destKey, Aggregate aggregate, int[] weights, byte[]... sets) {
+	public Long zInterStore(byte[] destKey, Aggregate aggregate, int[] weights,
+			byte[]... sets) {
 		return delegate.zInterStore(destKey, aggregate, weights, sets);
 	}
 
@@ -508,7 +513,8 @@ public class DefaultStringRedisConnection implements StringRedisConnection {
 		return delegate.zRange(key, start, end);
 	}
 
-	public Set<byte[]> zRangeByScore(byte[] key, double min, double max, long offset, long count) {
+	public Set<byte[]> zRangeByScore(byte[] key, double min, double max,
+			long offset, long count) {
 		return delegate.zRangeByScore(key, min, max, offset, count);
 	}
 
@@ -516,7 +522,8 @@ public class DefaultStringRedisConnection implements StringRedisConnection {
 		return delegate.zRangeByScore(key, min, max);
 	}
 
-	public Set<Tuple> zRangeByScoreWithScores(byte[] key, double min, double max, long offset, long count) {
+	public Set<Tuple> zRangeByScoreWithScores(byte[] key, double min,
+			double max, long offset, long count) {
 		return delegate.zRangeByScoreWithScores(key, min, max, offset, count);
 	}
 
@@ -528,7 +535,8 @@ public class DefaultStringRedisConnection implements StringRedisConnection {
 		return delegate.zRangeWithScores(key, start, end);
 	}
 
-	public Set<byte[]> zRevRangeByScore(byte[] key, double min, double max, long offset, long count) {
+	public Set<byte[]> zRevRangeByScore(byte[] key, double min, double max,
+			long offset, long count) {
 		return delegate.zRevRangeByScore(key, min, max, offset, count);
 	}
 
@@ -536,11 +544,14 @@ public class DefaultStringRedisConnection implements StringRedisConnection {
 		return delegate.zRevRangeByScore(key, min, max);
 	}
 
-	public Set<Tuple> zRevRangeByScoreWithScores(byte[] key, double min, double max, long offset, long count) {
-		return delegate.zRevRangeByScoreWithScores(key, min, max, offset, count);
+	public Set<Tuple> zRevRangeByScoreWithScores(byte[] key, double min,
+			double max, long offset, long count) {
+		return delegate
+				.zRevRangeByScoreWithScores(key, min, max, offset, count);
 	}
 
-	public Set<Tuple> zRevRangeByScoreWithScores(byte[] key, double min, double max) {
+	public Set<Tuple> zRevRangeByScoreWithScores(byte[] key, double min,
+			double max) {
 		return delegate.zRevRangeByScoreWithScores(key, min, max);
 	}
 
@@ -576,7 +587,8 @@ public class DefaultStringRedisConnection implements StringRedisConnection {
 		return delegate.zScore(key, value);
 	}
 
-	public Long zUnionStore(byte[] destKey, Aggregate aggregate, int[] weights, byte[]... sets) {
+	public Long zUnionStore(byte[] destKey, Aggregate aggregate, int[] weights,
+			byte[]... sets) {
 		return delegate.zUnionStore(destKey, aggregate, weights, sets);
 	}
 
@@ -603,15 +615,16 @@ public class DefaultStringRedisConnection implements StringRedisConnection {
 	}
 
 	private Map<byte[], byte[]> serialize(Map<String, String> hashes) {
-		Map<byte[], byte[]> ret = new LinkedHashMap<byte[], byte[]>(hashes.size());
-		
+		Map<byte[], byte[]> ret = new LinkedHashMap<byte[], byte[]>(
+				hashes.size());
+
 		for (Map.Entry<String, String> entry : hashes.entrySet()) {
-			ret.put(serializer.serialize(entry.getKey()), serializer.serialize(entry.getValue()));
+			ret.put(serializer.serialize(entry.getKey()),
+					serializer.serialize(entry.getValue()));
 		}
 
 		return ret;
 	}
-
 
 	private List<String> deserialize(List<byte[]> data) {
 		return SerializationUtils.deserialize(data, serializer);
@@ -631,528 +644,443 @@ public class DefaultStringRedisConnection implements StringRedisConnection {
 		}
 		Set<StringTuple> result = new LinkedHashSet<StringTuple>(data.size());
 		for (Tuple raw : data) {
-			result.add(new DefaultStringTuple(raw, serializer.deserialize(raw.getValue())));
+			result.add(new DefaultStringTuple(raw, serializer.deserialize(raw
+					.getValue())));
 		}
 
 		return result;
 	}
 
-	
 	public Long append(String key, String value) {
 		return delegate.append(serialize(key), serialize(value));
 	}
 
-	
 	public List<String> bLPop(int timeout, String... keys) {
 		return deserialize(delegate.bLPop(timeout, serializeMulti(keys)));
 	}
 
-	
 	public List<String> bRPop(int timeout, String... keys) {
 		return deserialize(delegate.bRPop(timeout, serializeMulti(keys)));
 	}
 
-	
 	public String bRPopLPush(int timeout, String srcKey, String dstKey) {
-		return deserialize(delegate.bRPopLPush(timeout, serialize(srcKey), serialize(dstKey)));
+		return deserialize(delegate.bRPopLPush(timeout, serialize(srcKey),
+				serialize(dstKey)));
 	}
 
-	
 	public Long decr(String key) {
 		return delegate.decr(serialize(key));
 	}
 
-	
 	public Long decrBy(String key, long value) {
 		return delegate.decrBy(serialize(key), value);
 	}
 
-	
 	public Long del(String... keys) {
 		return delegate.del(serializeMulti(keys));
 	}
 
-	
 	public String echo(String message) {
 		return deserialize(delegate.echo(serialize(message)));
 	}
 
-	
 	public Boolean exists(String key) {
 		return delegate.exists(serialize(key));
 	}
 
-	
 	public Boolean expire(String key, long seconds) {
 		return delegate.expire(serialize(key), seconds);
 	}
 
-	
 	public Boolean expireAt(String key, long unixTime) {
 		return delegate.expireAt(serialize(key), unixTime);
 	}
 
-	
 	public String get(String key) {
 		return deserialize(delegate.get(serialize(key)));
 	}
 
-	
 	public Boolean getBit(String key, long offset) {
 		return delegate.getBit(serialize(key), offset);
 	}
 
-	
 	public String getRange(String key, long start, long end) {
 		return deserialize(delegate.getRange(serialize(key), start, end));
 	}
 
-	
 	public String getSet(String key, String value) {
 		return deserialize(delegate.getSet(serialize(key), serialize(value)));
 	}
 
-	
 	public Boolean hDel(String key, String field) {
 		return delegate.hDel(serialize(key), serialize(field));
 	}
 
-	
 	public Boolean hExists(String key, String field) {
 		return delegate.hExists(serialize(key), serialize(field));
 	}
 
-	
 	public String hGet(String key, String field) {
 		return deserialize(delegate.hGet(serialize(key), serialize(field)));
 	}
 
-	
 	public Map<String, String> hGetAll(String key) {
 		throw new UnsupportedOperationException();
 	}
 
-	
 	public Long hIncrBy(String key, String field, long delta) {
 		return delegate.hIncrBy(serialize(key), serialize(field), delta);
 	}
 
-	
 	public Set<String> hKeys(String key) {
 		return deserialize(delegate.hKeys(serialize(key)));
 	}
 
-	
 	public Long hLen(String key) {
 		return delegate.hLen(serialize(key));
 	}
 
-	
 	public List<String> hMGet(String key, String... fields) {
-		return deserialize(delegate.hMGet(serialize(key), serializeMulti(fields)));
+		return deserialize(delegate.hMGet(serialize(key),
+				serializeMulti(fields)));
 	}
 
-
-	
 	public void hMSet(String key, Map<String, String> hashes) {
 		delegate.hMSet(serialize(key), serialize(hashes));
 	}
 
-	
 	public Boolean hSet(String key, String field, String value) {
-		return delegate.hSet(serialize(key), serialize(field), serialize(value));
+		return delegate
+				.hSet(serialize(key), serialize(field), serialize(value));
 	}
 
-	
 	public Boolean hSetNX(String key, String field, String value) {
-		return delegate.hSetNX(serialize(key), serialize(field), serialize(value));
+		return delegate.hSetNX(serialize(key), serialize(field),
+				serialize(value));
 	}
 
-	
 	public List<String> hVals(String key) {
 		return deserialize(delegate.hVals(serialize(key)));
 	}
 
-	
 	public Long incr(String key) {
 		return delegate.incr(serialize(key));
 	}
 
-	
 	public Long incrBy(String key, long value) {
 		return delegate.incrBy(serialize(key), value);
 	}
 
-	
 	public Collection<String> keys(String pattern) {
 		return deserialize(delegate.keys(serialize(pattern)));
 	}
 
-	
 	public String lIndex(String key, long index) {
 		return deserialize(delegate.lIndex(serialize(key), index));
 	}
 
-	
 	public Long lInsert(String key, Position where, String pivot, String value) {
-		return delegate.lInsert(serialize(key), where, serialize(pivot), serialize(value));
+		return delegate.lInsert(serialize(key), where, serialize(pivot),
+				serialize(value));
 	}
 
-	
 	public Long lLen(String key) {
 		return delegate.lLen(serialize(key));
 	}
 
-	
 	public String lPop(String key) {
 		return deserialize(delegate.lPop(serialize(key)));
 	}
 
-	
 	public Long lPush(String key, String value) {
 		return delegate.lPush(serialize(key), serialize(value));
 	}
 
-	
 	public Long lPushX(String key, String value) {
 		return delegate.lPushX(serialize(key), serialize(value));
 	}
 
-	
 	public List<String> lRange(String key, long start, long end) {
 		return deserialize(delegate.lRange(serialize(key), start, end));
 	}
 
-	
 	public Long lRem(String key, long count, String value) {
 		return delegate.lRem(serialize(key), count, serialize(value));
 	}
 
-	
 	public void lSet(String key, long index, String value) {
 		delegate.lSet(serialize(key), index, serialize(value));
 	}
 
-	
 	public void lTrim(String key, long start, long end) {
 		delegate.lTrim(serialize(key), start, end);
 	}
 
-	
 	public List<String> mGet(String... keys) {
 		return deserialize(delegate.mGet(serializeMulti(keys)));
 	}
 
-	
 	public void mSetNXString(Map<String, String> tuple) {
 		delegate.mSetNX(serialize(tuple));
 	}
 
-	
 	public void mSetString(Map<String, String> tuple) {
 		delegate.mSet(serialize(tuple));
 	}
 
-	
 	public Boolean persist(String key) {
 		return delegate.persist(serialize(key));
 	}
 
-	
 	public Boolean move(String key, int dbIndex) {
 		return delegate.move(serialize(key), dbIndex);
 	}
 
-	
 	public void pSubscribe(MessageListener listener, String... patterns) {
 		delegate.pSubscribe(listener, serializeMulti(patterns));
 	}
 
-	
 	public Long publish(String channel, String message) {
 		return delegate.publish(serialize(channel), serialize(message));
 	}
 
-	
 	public void rename(String oldName, String newName) {
 		delegate.rename(serialize(oldName), serialize(newName));
 	}
 
-	
 	public Boolean renameNX(String oldName, String newName) {
 		return delegate.renameNX(serialize(oldName), serialize(newName));
 	}
 
-	
 	public String rPop(String key) {
 		return deserialize(delegate.rPop(serialize(key)));
 	}
 
-	
 	public String rPopLPush(String srcKey, String dstKey) {
-		return deserialize(delegate.rPopLPush(serialize(srcKey), serialize(dstKey)));
+		return deserialize(delegate.rPopLPush(serialize(srcKey),
+				serialize(dstKey)));
 	}
 
-	
 	public Long rPush(String key, String value) {
 		return delegate.rPush(serialize(key), serialize(value));
 	}
 
-	
 	public Long rPushX(String key, String value) {
 		return delegate.rPushX(serialize(key), serialize(value));
 	}
 
-	
 	public Boolean sAdd(String key, String value) {
 		return delegate.sAdd(serialize(key), serialize(value));
 	}
 
-	
 	public Long sCard(String key) {
 		return delegate.sCard(serialize(key));
 	}
 
-	
 	public Set<String> sDiff(String... keys) {
 		return deserialize(delegate.sDiff(serializeMulti(keys)));
 	}
 
-	
 	public void sDiffStore(String destKey, String... keys) {
 		delegate.sDiffStore(serialize(destKey), serializeMulti(keys));
 	}
 
-	
 	public void set(String key, String value) {
 		delegate.set(serialize(key), serialize(value));
 	}
 
-	
 	public void setBit(String key, long offset, boolean value) {
 		delegate.setBit(serialize(key), offset, value);
 	}
 
-	
 	public void setEx(String key, long seconds, String value) {
 		delegate.setEx(serialize(key), seconds, serialize(value));
 	}
 
-	
 	public Boolean setNX(String key, String value) {
 		return delegate.setNX(serialize(key), serialize(value));
 	}
 
-	
 	public void setRange(String key, String value, long start) {
 		delegate.setRange(serialize(key), serialize(value), start);
 	}
 
-	
 	public Set<String> sInter(String... keys) {
 		return deserialize(delegate.sInter(serializeMulti(keys)));
 	}
 
-	
 	public void sInterStore(String destKey, String... keys) {
 		delegate.sInterStore(serialize(destKey), serializeMulti(keys));
 	}
 
-	
 	public Boolean sIsMember(String key, String value) {
 		return delegate.sIsMember(serialize(key), serialize(value));
 	}
 
-	
 	public Set<String> sMembers(String key) {
 		return deserialize(delegate.sMembers(serialize(key)));
 	}
 
-	
 	public Boolean sMove(String srcKey, String destKey, String value) {
-		return delegate.sMove(serialize(srcKey), serialize(destKey), serialize(value));
+		return delegate.sMove(serialize(srcKey), serialize(destKey),
+				serialize(value));
 	}
 
-	
 	public Long sort(String key, SortParameters params, String storeKey) {
 		return delegate.sort(serialize(key), params, serialize(storeKey));
 	}
 
-	
 	public List<String> sort(String key, SortParameters params) {
 		return deserialize(delegate.sort(serialize(key), params));
 	}
 
-	
 	public String sPop(String key) {
 		return deserialize(delegate.sPop(serialize(key)));
 	}
 
-	
 	public String sRandMember(String key) {
 		return deserialize(delegate.sRandMember(serialize(key)));
 	}
 
-	
 	public Boolean sRem(String key, String value) {
 		return delegate.sRem(serialize(key), serialize(value));
 	}
 
-	
 	public Long strLen(String key) {
 		return delegate.strLen(serialize(key));
 	}
 
-	
 	public void subscribe(MessageListener listener, String... channels) {
 		delegate.subscribe(listener, serializeMulti(channels));
 	}
 
-	
 	public Set<String> sUnion(String... keys) {
 		return deserialize(delegate.sUnion(serializeMulti(keys)));
 	}
 
-	
 	public void sUnionStore(String destKey, String... keys) {
 		delegate.sUnionStore(serialize(destKey), serializeMulti(keys));
 	}
 
-	
 	public Long ttl(String key) {
 		return delegate.ttl(serialize(key));
 	}
 
-	
 	public DataType type(String key) {
 		return delegate.type(serialize(key));
 	}
 
-	
 	public Boolean zAdd(String key, double score, String value) {
 		return delegate.zAdd(serialize(key), score, serialize(value));
 	}
 
-	
 	public Long zCard(String key) {
 		return delegate.zCard(serialize(key));
 	}
 
-	
 	public Long zCount(String key, double min, double max) {
 		return delegate.zCount(serialize(key), min, max);
 	}
 
-	
 	public Double zIncrBy(String key, double increment, String value) {
 		return delegate.zIncrBy(serialize(key), increment, serialize(value));
 	}
 
-	
-	public Long zInterStore(String destKey, Aggregate aggregate, int[] weights, String... sets) {
-		return delegate.zInterStore(serialize(destKey), aggregate, weights, serializeMulti(sets));
+	public Long zInterStore(String destKey, Aggregate aggregate, int[] weights,
+			String... sets) {
+		return delegate.zInterStore(serialize(destKey), aggregate, weights,
+				serializeMulti(sets));
 	}
 
-	
 	public Long zInterStore(String destKey, String... sets) {
 		return delegate.zInterStore(serialize(destKey), serializeMulti(sets));
 	}
 
-	
 	public Set<String> zRange(String key, long start, long end) {
 		return deserialize(delegate.zRange(serialize(key), start, end));
 	}
 
-	
-	public Set<String> zRangeByScore(String key, double min, double max, long offset, long count) {
-		return deserialize(delegate.zRangeByScore(serialize(key), min, max, offset, count));
+	public Set<String> zRangeByScore(String key, double min, double max,
+			long offset, long count) {
+		return deserialize(delegate.zRangeByScore(serialize(key), min, max,
+				offset, count));
 	}
 
-	
 	public Set<String> zRangeByScore(String key, double min, double max) {
 		return deserialize(delegate.zRangeByScore(serialize(key), min, max));
 	}
 
-	
-	public Set<StringTuple> zRangeByScoreWithScores(String key, double min, double max, long offset, long count) {
-		return deserializeTuple(delegate.zRangeByScoreWithScores(serialize(key), min, max, offset, count));
+	public Set<StringTuple> zRangeByScoreWithScores(String key, double min,
+			double max, long offset, long count) {
+		return deserializeTuple(delegate.zRangeByScoreWithScores(
+				serialize(key), min, max, offset, count));
 	}
 
-	
-	public Set<StringTuple> zRangeByScoreWithScores(String key, double min, double max) {
-		return deserializeTuple(delegate.zRangeByScoreWithScores(serialize(key), min, max));
+	public Set<StringTuple> zRangeByScoreWithScores(String key, double min,
+			double max) {
+		return deserializeTuple(delegate.zRangeByScoreWithScores(
+				serialize(key), min, max));
 	}
 
-	
 	public Set<StringTuple> zRangeWithScores(String key, long start, long end) {
-		return deserializeTuple(delegate.zRangeWithScores(serialize(key), start, end));
+		return deserializeTuple(delegate.zRangeWithScores(serialize(key),
+				start, end));
 	}
 
-	
 	public Long zRank(String key, String value) {
 		return delegate.zRank(serialize(key), serialize(value));
 	}
 
-	
 	public Boolean zRem(String key, String value) {
 		return delegate.zRem(serialize(key), serialize(value));
 	}
 
-	
 	public Long zRemRange(String key, long start, long end) {
 		return delegate.zRemRange(serialize(key), start, end);
 	}
 
-	
 	public Long zRemRangeByScore(String key, double min, double max) {
 		return delegate.zRemRangeByScore(serialize(key), min, max);
 	}
 
-	
 	public Set<String> zRevRange(String key, long start, long end) {
 		return deserialize(delegate.zRevRange(serialize(key), start, end));
 	}
 
-	
 	public Set<StringTuple> zRevRangeWithScores(String key, long start, long end) {
-		return deserializeTuple(delegate.zRevRangeWithScores(serialize(key), start, end));
+		return deserializeTuple(delegate.zRevRangeWithScores(serialize(key),
+				start, end));
 	}
 
-	
 	public Long zRevRank(String key, String value) {
 		return delegate.zRevRank(serialize(key), serialize(value));
 	}
 
-	
 	public Double zScore(String key, String value) {
 		return delegate.zScore(serialize(key), serialize(value));
 	}
 
-	
-	public Long zUnionStore(String destKey, Aggregate aggregate, int[] weights, String... sets) {
-		return delegate.zUnionStore(serialize(destKey), aggregate, weights, serializeMulti(sets));
+	public Long zUnionStore(String destKey, Aggregate aggregate, int[] weights,
+			String... sets) {
+		return delegate.zUnionStore(serialize(destKey), aggregate, weights,
+				serializeMulti(sets));
 	}
 
-	
 	public Long zUnionStore(String destKey, String... sets) {
 		return delegate.zUnionStore(serialize(destKey), serializeMulti(sets));
 	}
 
-	
 	public List<Object> closePipeline() {
 		return delegate.closePipeline();
 	}
 
-	
 	public boolean isPipelined() {
 		return delegate.isPipelined();
 	}
 
-	
 	public void openPipeline() {
 		delegate.openPipeline();
 	}
-
 
 	public Object execute(String command) {
 		return execute(command, (byte[][]) null);
