@@ -1396,7 +1396,7 @@ public class JedisConnection implements RedisConnection {
 				pipeline.sadd(key, value);
 				return null;
 			}
-			return (jedis.sadd(key, value) == 1);
+			return (jedis.sadd(key, value) == value.length);
 		} catch (Exception ex) {
 			throw convertJedisAccessException(ex);
 		}

@@ -30,7 +30,8 @@ import org.springframework.data.redis.serializer.SerializationUtils;
 import org.springframework.util.Assert;
 
 /**
- * Internal base class used by various RedisTemplate XXXOperations implementations.
+ * Internal base class used by various RedisTemplate XXXOperations
+ * implementations.
  * 
  * @author Costin Leau
  */
@@ -44,13 +45,13 @@ abstract class AbstractOperations<K, V> {
 			this.key = key;
 		}
 
-		
 		public final V doInRedis(RedisConnection connection) {
 			byte[] result = inRedis(rawKey(key), connection);
 			return deserializeValue(result);
 		}
 
-		protected abstract byte[] inRedis(byte[] rawKey, RedisConnection connection);
+		protected abstract byte[] inRedis(byte[] rawKey,
+				RedisConnection connection);
 	}
 
 	RedisTemplate<K, V> template;
@@ -79,7 +80,6 @@ abstract class AbstractOperations<K, V> {
 		return template.getStringSerializer();
 	}
 
-
 	<T> T execute(RedisCallback<T> callback, boolean b) {
 		return template.execute(callback, b);
 	}
@@ -104,6 +104,15 @@ abstract class AbstractOperations<K, V> {
 	}
 
 	@SuppressWarnings("unchecked")
+	byte[][] rawValue(Object... values) {
+		byte[][] result = new byte[values.length][];
+		for (int i = 0; i < values.length; i++) {
+			result[i] = valueSerializer().serialize(values[i]);
+		}
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
 	<HK> byte[] rawHashKey(HK hashKey) {
 		Assert.notNull(hashKey, "non null hash key required");
 		return hashKeySerializer().serialize(hashKey);
@@ -116,7 +125,6 @@ abstract class AbstractOperations<K, V> {
 
 	byte[][] rawKeys(K key, K otherKey) {
 		final byte[][] rawKeys = new byte[2][];
-
 
 		rawKeys[0] = rawKey(key);
 		rawKeys[1] = rawKey(key);
@@ -150,9 +158,11 @@ abstract class AbstractOperations<K, V> {
 
 	@SuppressWarnings("unchecked")
 	Set<TypedTuple<V>> deserializeTupleValues(Set<Tuple> rawValues) {
-		Set<TypedTuple<V>> set = new LinkedHashSet<TypedTuple<V>>(rawValues.size());
+		Set<TypedTuple<V>> set = new LinkedHashSet<TypedTuple<V>>(
+				rawValues.size());
 		for (Tuple rawValue : rawValues) {
-			set.add(new DefaultTypedTuple(valueSerializer().deserialize(rawValue.getValue()), rawValue.getScore()));
+			set.add(new DefaultTypedTuple(valueSerializer().deserialize(
+					rawValue.getValue()), rawValue.getScore()));
 		}
 		return set;
 	}
@@ -182,7 +192,8 @@ abstract class AbstractOperations<K, V> {
 		Map<HK, HV> map = new LinkedHashMap<HK, HV>(entries.size());
 
 		for (Map.Entry<byte[], byte[]> entry : entries.entrySet()) {
-			map.put((HK) deserializeHashKey(entry.getKey()), (HV) deserializeHashValue(entry.getValue()));
+			map.put((HK) deserializeHashKey(entry.getKey()),
+					(HV) deserializeHashValue(entry.getValue()));
 		}
 
 		return map;
@@ -202,7 +213,7 @@ abstract class AbstractOperations<K, V> {
 		return (String) stringSerializer().deserialize(value);
 	}
 
-	@SuppressWarnings( { "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	<HK> HK deserializeHashKey(byte[] value) {
 		return (HK) hashKeySerializer().deserialize(value);
 	}

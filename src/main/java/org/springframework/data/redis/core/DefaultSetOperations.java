@@ -35,7 +35,7 @@ class DefaultSetOperations<K, V> extends AbstractOperations<K, V> implements
 
 	public Boolean add(K key, V... value) {
 		final byte[] rawKey = rawKey(key);
-		final byte[] rawValue = rawValue(value);
+		final byte[][] rawValue = rawValue(value);
 		return execute(new RedisCallback<Boolean>() {
 
 			public Boolean doInRedis(RedisConnection connection) {
