@@ -268,11 +268,11 @@ public class DefaultStringRedisConnection implements StringRedisConnection {
 		return delegate.lPop(key);
 	}
 
-	public Long lPush(byte[] key, byte[] value) {
+	public Long lPush(byte[] key, byte[]... value) {
 		return delegate.lPush(key, value);
 	}
 
-	public Long lPushX(byte[] key, byte[] value) {
+	public Long lPushX(byte[] key, byte[]... value) {
 		return delegate.lPushX(key, value);
 	}
 
@@ -352,11 +352,11 @@ public class DefaultStringRedisConnection implements StringRedisConnection {
 		return delegate.rPopLPush(srcKey, dstKey);
 	}
 
-	public Long rPush(byte[] key, byte[] value) {
+	public Long rPush(byte[] key, byte[]... value) {
 		return delegate.rPush(key, value);
 	}
 
-	public Long rPushX(byte[] key, byte[] value) {
+	public Long rPushX(byte[] key, byte[]... value) {
 		return delegate.rPushX(key, value);
 	}
 

@@ -31,15 +31,15 @@ public interface ListOperations<K, V> {
 
 	Long size(K key);
 
-	Long leftPush(K key, V value);
+	Long leftPush(K key, V... value);
 
-	Long leftPushIfPresent(K key, V value);
+	Long leftPushIfPresent(K key, V... value);
 
 	Long leftPush(K key, V pivot, V value);
 
-	Long rightPush(K key, V value);
+	Long rightPush(K key, V... value);
 
-	Long rightPushIfPresent(K key, V value);
+	Long rightPushIfPresent(K key, V... value);
 
 	Long rightPush(K key, V pivot, V value);
 
@@ -59,7 +59,8 @@ public interface ListOperations<K, V> {
 
 	V rightPopAndLeftPush(K sourceKey, K destinationKey);
 
-	V rightPopAndLeftPush(K sourceKey, K destinationKey, long timeout, TimeUnit unit);
+	V rightPopAndLeftPush(K sourceKey, K destinationKey, long timeout,
+			TimeUnit unit);
 
 	RedisOperations<K, V> getOperations();
 }

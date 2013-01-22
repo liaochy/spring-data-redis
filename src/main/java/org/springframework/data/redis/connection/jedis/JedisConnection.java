@@ -1108,7 +1108,7 @@ public class JedisConnection implements RedisConnection {
 	// List commands
 	//
 
-	public Long lPush(byte[] key, byte[] value) {
+	public Long lPush(byte[] key, byte[]... value) {
 		try {
 			if (isQueueing()) {
 				transaction.lpush(key, value);
@@ -1124,7 +1124,7 @@ public class JedisConnection implements RedisConnection {
 		}
 	}
 
-	public Long rPush(byte[] key, byte[] value) {
+	public Long rPush(byte[] key, byte[]... value) {
 		try {
 			if (isQueueing()) {
 				transaction.rpush(key, value);
@@ -1350,7 +1350,7 @@ public class JedisConnection implements RedisConnection {
 		}
 	}
 
-	public Long lPushX(byte[] key, byte[] value) {
+	public Long lPushX(byte[] key, byte[]... value) {
 		try {
 			if (isQueueing()) {
 				transaction.lpushx(key, value);
@@ -1366,7 +1366,7 @@ public class JedisConnection implements RedisConnection {
 		}
 	}
 
-	public Long rPushX(byte[] key, byte[] value) {
+	public Long rPushX(byte[] key, byte[]... value) {
 		try {
 			if (isQueueing()) {
 				transaction.rpushx(key, value);
