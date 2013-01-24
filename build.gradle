@@ -34,6 +34,7 @@ dependencies {
     // Logging
     compile "org.slf4j:slf4j-api:$slf4jVersion"
     compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+    compile "com.alibaba:fastjson:$fastJsonVersion"	
     runtime "com.alibaba:fastjson:$fastJsonVersion"		
     runtime "log4j:log4j:$log4jVersion"
     runtime "org.slf4j:slf4j-log4j12:$slf4jVersion"
@@ -54,6 +55,7 @@ dependencies {
     compile("commons-beanutils:commons-beanutils-core:1.8.3", optional)
 
     // Testing
+    testCompile "com.alibaba:fastjson:$fastJsonVersion"	
     testCompile "junit:junit:$junitVersion"
     testCompile "org.springframework:spring-test:$springVersion"
     testCompile "org.mockito:mockito-all:$mockitoVersion"
