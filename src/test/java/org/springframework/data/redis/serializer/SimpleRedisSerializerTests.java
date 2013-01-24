@@ -164,4 +164,12 @@ public class SimpleRedisSerializerTests {
 		assertEquals(p1, serializer.deserialize(serializer.serialize(p1)));
 		assertEquals(p1, serializer.deserialize(serializer.serialize(p1)));
 	}
+	@Test
+	public void testFastJsonSerializer() throws Exception {
+		FastJsonRedisSerializer<Person> serializer = new FastJsonRedisSerializer<Person>(Person.class);
+		String value = UUID.randomUUID().toString();
+		Person p1 = new Person(value, value, 1, new Address(value, 2));
+		assertEquals(p1, serializer.deserialize(serializer.serialize(p1)));
+		assertEquals(p1, serializer.deserialize(serializer.serialize(p1)));
+	}
 }
